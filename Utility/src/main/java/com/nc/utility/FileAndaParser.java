@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,6 +20,7 @@ public class FileAndaParser {
 	
 	static String newFileHeader = "Serialnmber|Sortorder|PartNumber|Partname|level1|serialized|Source|Lastupdateddate|Indent";
 	static List<String> newFileContent = new ArrayList<String>();
+	static Set<String> newContentwithoutLevel1 = new TreeSet<String>();
 	static String [] headerArr = null;
 	
 	
@@ -33,25 +35,31 @@ public class FileAndaParser {
 
 	          headerFound  = processForMetaData(parentMap, fileName);
 	          newFileContent.add(newFileHeader);
-	          Set<String> parentSet =   parentMap.keySet();
+	          //Map with lines which has not Level1 entry
+	          Set<String> parentSet =  new TreeSet<String>(parentMap.keySet());
 	          for (String parent : parentSet) {
 	        	  String parentLine = parentMap.get(parent);
 	        	  String [] dataArr = parentLine.split("\\|");
 	        	  if(getIndexOf(dataArr, parent) == getIndexOf(headerArr,"PartNumber")){
 	        		  parentLine = parentLine+"0";
-	        		  newFileContent.add(parentLine);
+	        		  int levalIndx = getIndexOf(headerArr, "level1");
+	        		  String[] parentDataArr = parentLine.split("\\|");
+	        		  if(parentDataArr[levalIndx] ==null || parentDataArr[levalIndx].isEmpty()){
+	        			  newContentwithoutLevel1.add(parentLine);
+	        		  }else{
+	        			  newFileContent.add(parentLine);
+	        		  }
+	        		  //Remove the parent from map for further processing
+	        		  parentMap.remove(parent);
 	        		  for (String parentMapKey : parentMap.keySet()) {
-	        			  if(!parentMapKey.equalsIgnoreCase(parent)){
 	        				  String line = parentMap.get(parentMapKey);
 	        				  String[] chidDataArr = line.split("\\|");
-	        				  int indx = getIndexOf(headerArr, "level1");
-	        				  String childV = chidDataArr[indx];
+	        				  
+	        				  String childV = chidDataArr[levalIndx];
 	        				  if(childV.contains(parent)){
 	        					  line = line+"1";
 	        					  newFileContent.add(line);
 	        				  }
-	        			  }
-						
 					  }
 	        	  }else{
 	        		 System.err.println("Skiping the line as this is not in format. Line:"+parentLine);
@@ -64,6 +72,10 @@ public class FileAndaParser {
 	          for(String str: newFileContent) {
 	            writer.write(str);
 	            writer.write("\n");
+	          }
+	          for (String string : newContentwithoutLevel1) {
+	        	  writer.write(string);
+		          writer.write("\n");
 	          }
 	          writer.close();
 			  
@@ -99,8 +111,12 @@ public class FileAndaParser {
 			  if(flag){
 				  dataArr = line.split("\\|");
 				  if(dataArr.length==headerArr.length){
+					  
+					  //generate map which has level1
 					  int parentIndx = getIndexOf(headerArr,"PartNumber");
 					  parentMap.put(dataArr[parentIndx],line);
+					 
+					  
 				  }else{
 		    		  System.out.println("invalid line found "+line);
 		    	  }

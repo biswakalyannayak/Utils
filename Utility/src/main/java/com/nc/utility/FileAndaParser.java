@@ -4,9 +4,12 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -23,7 +26,8 @@ public class FileAndaParser {
 	static String [] headerArr = null;
 	static TreeSet<String> parentSet = new TreeSet<String>();
 	static TreeSet<String> dataSet = new TreeSet<String>();
-	static TreeSet<String> parsedLevel = new TreeSet<String>();
+	static LinkedHashSet<String> parsedLevel = new LinkedHashSet<String>();
+	static String parentPN = null;
 	
 	
 	public static void main(String[] args) {
@@ -41,8 +45,7 @@ public class FileAndaParser {
 			 //Make a local copy for iteration
 			 TreeSet<String> parentSetL1 = new TreeSet<String>(parentSet);
 			 TreeSet<String> dataSetL1 = new TreeSet<String>(dataSet);
-	         //Provide the header
-	         newFileContent.put("Header",newFileHeader);
+	         
 	         //Get the index
 	         int levalIndx = getIndexOf(headerArr, "level1");
 	         int partNumberIndx = getIndexOf(headerArr,"PartNumber");
@@ -52,8 +55,11 @@ public class FileAndaParser {
 	        	  parentSet.remove(parentLine);
 	        	  String [] parentDataArr = parentLine.split("\\|");
 	        	  String parentPartCode = parentDataArr[partNumberIndx];
-	        	  if(newFileContent.get(parentPartCode)==null){
+	        	  if(parentPN.equalsIgnoreCase(parentPartCode)){
+	        		  if(newFileContent.get(parentPartCode)==null)
 	        		  newFileContent.put(parentPartCode,parentLine+"0");
+	        	  }else{
+	        		  newContentwithoutLevel1.add(parentLine);
 	        	  }
 	        	 
 	        	  //Iterate dataset local and find all exact matching level1
@@ -66,7 +72,7 @@ public class FileAndaParser {
         				if(level1.contains(parentPartCode)){
         					if(level1.equalsIgnoreCase(parentPartCode)){//10732256
         						 if(newFileContent.get(dataPartCode)==null){
-        			        		  newFileContent.put(dataPartCode,dataLine+"1");
+        			        		  newFileContent.put(dataPartCode,constructData(dataArr,levalIndx)+"1");
         			        	  }
             					dataSet.remove(dataLine);
             					dataLineIt1.remove();
@@ -92,23 +98,61 @@ public class FileAndaParser {
 	          
 	          System.out.println("Size"+parentMap.size()+parentMap);
 	          System.err.println("Size"+newFileContent.size()+newFileContent);
-	          FileWriter writer = new FileWriter(outputFile); 
-	          for(String str: newFileContent.keySet()) {
-	        	  
-	            writer.write(newFileContent.get(str));
-	            writer.write("\n");
-	          }
-	          for (String string : newContentwithoutLevel1) {
-	        	  writer.write(string);
-		          writer.write("\n");
-	          }
-	          writer.close();
+	          writeToFile(outputFile);
 			  
 	       }catch(Exception e){
 	    	   e.printStackTrace();
 	          System.out.println("Error while reading file line by line:" + e.getMessage());                      
 	       }
 		
+	}
+	private static void writeToFile(String outputFile) throws IOException {
+		//LinkedHashMap<String, String> 
+		  //Order the output
+		  for(String str: newFileContent.keySet()) {
+			  String line = newFileContent.get(str);
+			  String lastElement = line.substring(line.length()-1);
+			  if("0".equals(lastElement)){
+				  
+			  }
+			  if("1".equals(lastElement)){
+				  
+			  }
+			  if("2".equals(lastElement)){
+				  
+			  }
+			  if("3".equals(lastElement)){
+				  
+			  }
+			  
+		  }
+		  
+		  
+		  FileWriter writer = new FileWriter(outputFile); 
+		//Provide the header
+		  writer.write(newFileHeader);
+		  writer.write("\n");
+		  for(String str: newFileContent.keySet()) {
+			  
+		    writer.write(newFileContent.get(str));
+		    writer.write("\n");
+		  }
+		  for (String string : newContentwithoutLevel1) {
+			  writer.write(string);
+		      writer.write("\n");
+		  }
+		  writer.close();
+	}
+	private static String constructData(String[] dataArr, int levalIndx) {
+		String data = "";
+		for (int i = 0; i < dataArr.length; i++) {
+			if(levalIndx==i){
+				data = data+"|";
+			}else{
+			data = data+dataArr[i]+"|";
+			}
+		}
+		return data;
 	}
 	private static boolean isParsed(String level1) {
 		for (String string : parentSet) {
@@ -129,7 +173,8 @@ public class FileAndaParser {
 				if(level1.equalsIgnoreCase(dataPartCode)){
 					dataSet.remove(dataLine);
 					if(newFileContent.get(childPartCode)==null){
-		        		  newFileContent.put(childPartCode,dataLine+indent);
+						//newFileContent.put(childPartCode,dataLine+indent);
+						newFileContent.put(childPartCode,constructData(dataArr, levalIndx)+indent);
 		        	  }
 					dataLineIt1.remove();
 				}else{
@@ -154,7 +199,8 @@ public class FileAndaParser {
 				dataSet.remove(string);
 				//string.replaceAll(dataPartCode, "");
 				if(newFileContent.get(dataPartCode)==null){
-	        		  newFileContent.put(dataPartCode,string+indent);
+	        		  //newFileContent.put(dataPartCode,string+indent);
+	        		  newFileContent.put(dataPartCode,constructData(dataArr, levalIndx)+indent);
 	        		  break;
 	        	  }
 			}
@@ -203,12 +249,9 @@ public class FileAndaParser {
 				if(Level2.contains(relativeChid)){
 					dataSet.remove(dataline2);
 					if(newFileContent.get(childSubparentcode)==null){
-						/*if(subChildPartCode!= null && !subChildPartCode.isEmpty()){
-							newFileContent.put(childSubparentcode,dataline2+(indent+1));
-						}else{
-							newFileContent.put(childSubparentcode,dataline2+(indent+2));
-						}*/
-						newFileContent.put(childSubparentcode,dataline2+(indent+2));
+						
+						//newFileContent.put(childSubparentcode,dataline2+(indent+2));
+						newFileContent.put(childSubparentcode,constructData(dataArr2, levalIndx)+(indent+2));
 		        	  }
 					dataLineIt2.remove();
 				}
@@ -229,7 +272,7 @@ public class FileAndaParser {
 
 		  //Variable to hold the one line data
 		  String line;
-
+		  int count = 0;
 		  // Read file line by line and print on the console
 		  while ((line = bufferReader.readLine()) != null && !line.isEmpty())   {
 			  if(!flag && headerMatcher.reset(line).matches()){
@@ -242,14 +285,20 @@ public class FileAndaParser {
 			  if(flag){
 				  dataArr = line.split("\\|");
 				  if(dataArr.length==headerArr.length){
+					  
 					  int levalIndx = getIndexOf(headerArr, "level1");
+					  int parentIndx = getIndexOf(headerArr,"PartNumber");
 					  if((dataArr[levalIndx] ==null || dataArr[levalIndx].isEmpty())){
 	        			  parentSet.add(line);
+	        			  if(count==0){
+	        				  count = count+1;
+	        				  parentPN = dataArr[parentIndx];
+	        			  }
 	        		  }else{
 	        			  dataSet.add(line);
 	        		  }
 					  //generate map which has level1
-					  int parentIndx = getIndexOf(headerArr,"PartNumber");
+					  
 					  parentMap.put(dataArr[parentIndx],line);
 					 
 					  

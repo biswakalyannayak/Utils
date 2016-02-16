@@ -39,38 +39,35 @@ public class FileAndaParser {
 		String outputFile="E:\\WorkSpace\\CommonUtility\\GitHub\\Utility\\src\\main\\java\\com\\nc\\utility\\Result1.csv";
 				
 		 try{
-
-	          headerFound  = processForMetaData(parentMap, fileName);
-	          newFileContent.add(newFileHeader);
-	          int levalIndx = getIndexOf(headerArr, "level1");
-    		  int serilizeIndx = getIndexOf(headerArr, "serialized");
-    		  int partNumberIndx = getIndexOf(headerArr,"PartNumber");
-    		  
-    		  System.err.println(parentSet);
-    		  System.out.println(dataSet);
-    		  
-	          for (String parentLine : parentSet) {
+			 //Get the header and parent and data set
+			 headerFound  = processForMetaData(parentMap, fileName);
+			 //Make a local copy for iteration
+			 TreeSet<String> parentSetL1 = new TreeSet<String>(parentSet);
+			 TreeSet<String> dataSetL1 = new TreeSet<String>(dataSet);
+	         //Provide the header
+	         newFileContent.add(newFileHeader);
+	         //Get the index
+	         int levalIndx = getIndexOf(headerArr, "level1");
+	         int serilizeIndx = getIndexOf(headerArr, "serialized");
+	         int partNumberIndx = getIndexOf(headerArr,"PartNumber");
+    		  //iterate over local parent copy
+	          for (String parentLine : parentSetL1) {
 	        	  String [] parentDataArr = parentLine.split("\\|");
-	        	  parentLine = parentLine+"0";
-	        	  /*if((parentDataArr[levalIndx] ==null || parentDataArr[levalIndx].isEmpty())
-        				  && (parentDataArr[serilizeIndx] ==null || parentDataArr[serilizeIndx].isEmpty())){
-        			  newContentwithoutLevel1.add(parentLine);
-        		  }else if((parentDataArr[levalIndx] ==null || parentDataArr[levalIndx].isEmpty())){*/
-        			  newFileContent.add(parentLine);
-        			  String parentcode = parentDataArr[partNumberIndx];
-        			  Iterator<String> dataLineIt1 = dataSet.iterator();
-        			  while (dataLineIt1.hasNext()) {
+	        	  newFileContent.add(parentLine+"0");
+	        	  String parentcode = parentDataArr[partNumberIndx];
+	        	  //Iterate dataset local and find all exact matching level1
+	        	  Iterator<String> dataLineIt1 = dataSetL1.iterator();
+	        	  while (dataLineIt1.hasNext()) {
         				String dataLine = dataLineIt1.next();
         				String[] dataArr = dataLine.split("\\|");
         				String level1 = dataArr[levalIndx];
         				String childParentCode = dataArr[partNumberIndx];
         				if(level1.equalsIgnoreCase(parentcode)){
-        					
-        					dataLine = dataLine+"1";
-        					newFileContent.add(dataLine);
-        					dataLineIt1.remove();
+        					newFileContent.add(dataLine+"1");
         					dataSet.remove(dataLine);
-        					extractParent((TreeSet<String>) dataSet.clone(),childParentCode,levalIndx,partNumberIndx);
+        					dataLineIt1.remove();
+        					//Find exact match for of sub parent in level1
+        					extractSubParent(new TreeSet<String>(dataSet),childParentCode,levalIndx,partNumberIndx);
         				}
         				else if(level1.contains(parentcode)){
         					String subChildParentCode;
@@ -125,20 +122,20 @@ public class FileAndaParser {
 		
 	}
 
-	private static void extractParent(TreeSet<String> dataSet1, String childParentCode, int levalIndx, int partNumberIndx) {
+	private static void extractSubParent(TreeSet<String> dataSet1, String childParentCode, int levalIndx, int partNumberIndx) {
 		  Iterator<String> dataLineIt1 = dataSet1.iterator();
 		  while (dataLineIt1.hasNext()) {
 			String dataLine = dataLineIt1.next();
 			String[] dataArr = dataLine.split("\\|");
 			String level1 = dataArr[levalIndx];
-			String chparentcode = dataArr[partNumberIndx];
+			String childSubparentcode = dataArr[partNumberIndx];
 			if(level1.equalsIgnoreCase(childParentCode)){
-				dataSet1.remove(dataLine);
+				dataSet.remove(dataLine);
 				dataLine = dataLine+"1";
-				dataSet1.remove(dataLine);
 				newFileContent.add(dataLine);
 				dataLineIt1.remove();
-				exrtractRelativeParent((TreeSet<String>) dataSet1.clone(),childParentCode,levalIndx,partNumberIndx);
+				
+				//exrtractRelativeParent((TreeSet<String>) dataSet1.clone(),childParentCode,levalIndx,partNumberIndx);
 			}
 		}
 		

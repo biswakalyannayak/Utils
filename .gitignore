@@ -1,3 +1,6 @@
-spring-jpa/target/
-spring-jpa/.settings
-spring-jpa/.mvn
+*.mvn
+**/.settings/*
+**/target/*
+**/.idea/*
+*.project
+*.classpath

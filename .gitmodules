@@ -1,0 +1,6 @@
+[submodule "json-schema-validator"]
+	path = json-schema-validator
+	url = https://github.com/daveclayton/json-schema-validator.git
+[submodule "MultiSchemaConnect"]
+	path = MultiSchemaConnect
+	url = https://github.com/biswakalyannayak/MultiSchemaConnect.git

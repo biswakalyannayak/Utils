@@ -1,22 +1,36 @@
 package com.bk;
 
+import javax.servlet.Filter;
+import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
+import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
+import org.springframework.web.filter.DelegatingFilterProxy;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
+
+import com.bk.web.security.SecurityConfig;
 
 public class SpringWebAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
 	@Override
 	protected Class<?>[] getRootConfigClasses() {
-		return null;//new Class<?>[] { AppConfig.class};
+		//return new Class<?>[] { AppConfig.class,SecurityConfig.class};
+		return new Class<?>[] { AppConfig.class};
 	}
 
 	@Override
 	protected Class<?>[] getServletConfigClasses() {
-		return null;// new Class<?>[] { WebMvcConfig.class, RepositoryRestMvcConfiguration.class };
+		return new Class<?>[] { WebMvcConfig.class, RepositoryRestMvcConfiguration.class };
 	}
 
 	@Override
 	protected String[] getServletMappings() {
 		return new String[] { "/ssj/rest/*" };
 	}
+	
+	/*@Override
+    protected Filter[] getServletFilters() {
+       return new Filter[]{ 
+               new DelegatingFilterProxy("springSecurityFilterChain"),
+               new OpenEntityManagerInViewFilter()};
+    } */
 
 }

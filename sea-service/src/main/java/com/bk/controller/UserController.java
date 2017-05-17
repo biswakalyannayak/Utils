@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bk.api.bean.User;
-import com.bk.entity.UserEntity;
+import com.bk.entities.UserEntity;
 import com.bk.mapper.UserMapper;
-import com.bk.repository.UserRepository;
+import com.bk.repositories.UserRepository;
 
 @RestController("/user")
 public class UserController {

@@ -1,5 +1,7 @@
 package com.example.jpadata.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +30,12 @@ public class UserController {
     public ResponseEntity<User> getById(@PathVariable("id") Long id) {
 		return new ResponseEntity<>(userRepository.findOne(id) , HttpStatus.OK);
     }
+	
+	@GetMapping("/all")
+    public ResponseEntity<List<User>> getAll() {
+		return new ResponseEntity<>((List<User>)userRepository.findAll() , HttpStatus.OK);
+    }
+	
 	@PostMapping
     public ResponseEntity<User> message(@RequestBody User user) {
         return new ResponseEntity<>(userRepository.save(user) , HttpStatus.OK);

@@ -1,5 +1,7 @@
 package com.example.jpadata.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,13 @@ public class AddresContoller {
     public ResponseEntity<Address> getById(@PathVariable("id") Long id) {
 		return new ResponseEntity<>(addressRepository.findOne(id) , HttpStatus.OK);
     }
+	
+	@GetMapping("/all")
+    public ResponseEntity<List<Address>> getAll() {
+		return new ResponseEntity<>((List<Address>)addressRepository.findAll() , HttpStatus.OK);
+    }
+	
+	
 	@PostMapping
     public ResponseEntity<Address> message(@RequestBody Address address) {
 		 return new ResponseEntity<>(addressRepository.save(address) , HttpStatus.OK);
